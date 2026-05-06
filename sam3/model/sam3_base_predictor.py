@@ -10,6 +10,7 @@ Subclasses only need to override methods where their behavior differs.
 """
 
 import gc
+import inspect
 import time
 import uuid
 from typing import Dict, List, Optional
@@ -130,6 +131,16 @@ class Sam3BasePredictor:
             init_kwargs["async_loading_frames"] = self.async_loading_frames
         if hasattr(self, "video_loader_type"):
             init_kwargs["video_loader_type"] = self.video_loader_type
+        init_signature = inspect.signature(self.model.init_state)
+        if not any(
+            param.kind == inspect.Parameter.VAR_KEYWORD
+            for param in init_signature.parameters.values()
+        ):
+            init_kwargs = {
+                key: value
+                for key, value in init_kwargs.items()
+                if key in init_signature.parameters
+            }
         inference_state = self.model.init_state(**init_kwargs)
 
         if not session_id:

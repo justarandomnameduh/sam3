@@ -142,6 +142,21 @@ class RunTextVideoSegmentationTest(unittest.TestCase):
             self.assertEqual(exit_code, 0)
             self.assertFalse(out_dir.exists())
 
+    def test_no_fa3_sets_build_flag(self):
+        args = run_text_video_segmentation.build_arg_parser().parse_args(
+            [
+                "--in-path",
+                "/tmp/frames",
+                "--out-path",
+                "/tmp/out",
+                "--query",
+                "gold fish",
+                "--no-fa3",
+            ]
+        )
+
+        self.assertTrue(args.no_fa3)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -351,6 +351,11 @@ def build_arg_parser():
     parser.add_argument("--max-num-objects", type=int, default=16)
     parser.add_argument("--compile", action="store_true")
     parser.add_argument("--warm-up", action="store_true")
+    parser.add_argument(
+        "--no-fa3",
+        action="store_true",
+        help="Disable FlashAttention 3 and use PyTorch attention kernels.",
+    )
     parser.add_argument("--async-loading-frames", action="store_true")
     parser.add_argument("--skip-overlay", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
@@ -450,6 +455,7 @@ def run(args):
         "compile": args.compile,
         "warm_up": args.warm_up,
         "async_loading_frames": args.async_loading_frames,
+        "use_fa3": not args.no_fa3,
     }
     if args.checkpoint:
         build_kwargs["checkpoint_path"] = str(normalize_path(args.checkpoint))
@@ -526,6 +532,7 @@ def run(args):
             "fps": args.fps,
             "alpha": args.alpha,
             "output_prob_thresh": args.output_prob_thresh,
+            "use_fa3": not args.no_fa3,
             "mask_dir": str(masks_dir),
             "overlay_path": overlay_output,
             "detected_sam_object_ids": sorted(detected_sam_object_ids),

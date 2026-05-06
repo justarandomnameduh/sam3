@@ -157,6 +157,28 @@ class RunTextVideoSegmentationTest(unittest.TestCase):
 
         self.assertTrue(args.no_fa3)
 
+    def test_validates_sam31_threshold_flags(self):
+        parser = run_text_video_segmentation.build_arg_parser()
+        args = parser.parse_args(
+            [
+                "--in-path",
+                "/tmp/frames",
+                "--out-path",
+                "/tmp/out",
+                "--query",
+                "gold fish",
+                "--score-threshold-detection",
+                "0.15",
+                "--new-det-thresh",
+                "0.25",
+            ]
+        )
+
+        args = run_text_video_segmentation._prepare_args(args)
+
+        self.assertEqual(args.score_threshold_detection, 0.15)
+        self.assertEqual(args.new_det_thresh, 0.25)
+
 
 if __name__ == "__main__":
     unittest.main()

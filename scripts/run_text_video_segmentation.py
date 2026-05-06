@@ -349,6 +349,18 @@ def build_arg_parser():
     parser.add_argument("--alpha", type=float, default=0.45)
     parser.add_argument("--output-prob-thresh", type=float, default=0.5)
     parser.add_argument("--max-num-objects", type=int, default=16)
+    parser.add_argument(
+        "--score-threshold-detection",
+        type=float,
+        default=None,
+        help="SAM3.1 text-grounding detection threshold; lower it for missed objects.",
+    )
+    parser.add_argument(
+        "--new-det-thresh",
+        type=float,
+        default=None,
+        help="SAM3.1 new-object acceptance threshold; lower it for missed objects.",
+    )
     parser.add_argument("--compile", action="store_true")
     parser.add_argument("--warm-up", action="store_true")
     parser.add_argument(
@@ -378,6 +390,13 @@ def _prepare_args(args):
         raise ValueError("--alpha must be between 0 and 1")
     if not 0.0 <= args.output_prob_thresh <= 1.0:
         raise ValueError("--output-prob-thresh must be between 0 and 1")
+    if (
+        args.score_threshold_detection is not None
+        and not 0.0 <= args.score_threshold_detection <= 1.0
+    ):
+        raise ValueError("--score-threshold-detection must be between 0 and 1")
+    if args.new_det_thresh is not None and not 0.0 <= args.new_det_thresh <= 1.0:
+        raise ValueError("--new-det-thresh must be between 0 and 1")
     if args.max_num_objects <= 0:
         raise ValueError("--max-num-objects must be positive")
     if args.allow_no_cuda and not args.dry_run:
@@ -461,6 +480,10 @@ def run(args):
         build_kwargs["checkpoint_path"] = str(normalize_path(args.checkpoint))
     if args.version == "sam3.1":
         build_kwargs["max_num_objects"] = args.max_num_objects
+        if args.score_threshold_detection is not None:
+            build_kwargs["score_threshold_detection"] = args.score_threshold_detection
+        if args.new_det_thresh is not None:
+            build_kwargs["new_det_thresh"] = args.new_det_thresh
 
     print(f"[sam3-cli] Building {args.version} predictor")
     try:
@@ -533,6 +556,8 @@ def run(args):
             "alpha": args.alpha,
             "output_prob_thresh": args.output_prob_thresh,
             "use_fa3": not args.no_fa3,
+            "score_threshold_detection": args.score_threshold_detection,
+            "new_det_thresh": args.new_det_thresh,
             "mask_dir": str(masks_dir),
             "overlay_path": overlay_output,
             "detected_sam_object_ids": sorted(detected_sam_object_ids),
